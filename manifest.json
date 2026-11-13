@@ -1,0 +1,9 @@
+
+{
+  "name": "ABHI APP - Gaming World",
+  "short_name": "ABHI APP",
+  "description": "Play games and beat your high score",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "por
