@@ -1,4 +1,116 @@
-()">Logout</button>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#100707">
+<title>ABHI APP - Gaming World</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#100707;color:white;
+ font-family:Arial,sans-serif;
+}
+header{
+ background:#1b0909;padding:20px 18px;
+ border-bottom:1px solid #482323;
+}
+.logo{font-size:30px;font-weight:900;color:#ff3038}
+.logo span{color:white}
+header p{color:#aaa;margin:8px 0 0}
+main{padding:18px;max-width:650px;margin:auto}
+.card{
+ background:#211010;border:1px solid #482323;
+ border-radius:24px;padding:22px;margin-bottom:18px;
+}
+h2{font-size:23px;margin:0 0 16px}
+h3{margin:12px 0}
+p{color:#aaa;line-height:1.5}
+input{
+ width:100%;padding:16px;border-radius:12px;
+ border:1px solid #653333;background:#100707;
+ color:white;font-size:17px;margin:10px 0;
+}
+button{
+ border:0;border-radius:12px;padding:14px 20px;
+ background:#ed2028;color:white;font-size:16px;
+ font-weight:bold;cursor:pointer;margin:5px 0;
+}
+button:active{transform:scale(.97)}
+.secondary{background:#392020}
+.hidden{display:none!important}
+.welcome{font-size:25px;font-weight:bold}
+.stats,.games{
+ display:grid;grid-template-columns:repeat(2,1fr);
+ gap:14px;
+}
+.stat{
+ background:#350f0f;padding:20px 10px;
+ border-radius:18px;text-align:center;font-size:19px;
+}
+.stat strong{
+ display:block;color:#ff454d;font-size:30px;margin-top:12px;
+}
+.game{
+ background:#2b1111;border:1px solid #633030;
+ border-radius:22px;padding:20px 12px;text-align:center;
+ display:flex;flex-direction:column;align-items:center;
+}
+.game .emoji{font-size:55px}
+.game p{min-height:45px}
+.game button{width:100%;margin-top:auto}
+.board{
+ display:grid;grid-template-columns:repeat(3,1fr);
+ gap:10px;max-width:340px;margin:25px auto;
+}
+.cell{
+ aspect-ratio:1;background:#351616;
+ border:1px solid #743535;border-radius:18px;
+ display:flex;align-items:center;justify-content:center;
+ font-size:40px;font-weight:bold;cursor:pointer;
+}
+.result{text-align:center;font-size:21px;margin:20px 0}
+.big-number{font-size:55px;color:#ff454d;font-weight:bold;text-align:center}
+.tap-area{
+ background:#3b1111;border-radius:20px;padding:35px 10px;
+ text-align:center;margin:20px 0;
+}
+.tap-area button{width:100%;padding:30px;font-size:25px}
+footer{text-align:center;color:#888;padding:25px}
+.rank{
+ display:flex;justify-content:space-between;
+ border-bottom:1px solid #482323;padding:15px 0;
+ font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">🎮 ABHI <span>APP</span></div>
+ <p>YOUR GAMING WORLD</p>
+</header>
+
+<main>
+
+<!-- LOGIN -->
+<section id="login" class="card">
+ <h2>👤 Player Login</h2>
+ <p>Enter your gaming name to continue</p>
+ <input id="playerName" placeholder="Enter your name" maxlength="20">
+ <button onclick="login()">Start Gaming →</button>
+</section>
+
+<!-- HOME -->
+<section id="home" class="hidden">
+
+ <div class="card">
+  <div class="welcome">Welcome, <span id="welcomeName"></span> 👋</div>
+  <p>Ready to play and win?</p>
+  <button class="secondary" onclick="logout()">Logout</button>
  </div>
 
  <div class="stats">
@@ -6,56 +118,298 @@
   <div class="stat">🎯 Games Played<strong id="played">0</strong></div>
  </div>
 
- <div class="card" style="margin-top:17px">
+ <div class="card" style="margin-top:18px">
   <h2>🔥 Choose Your Game</h2>
   <div class="games">
+
    <div class="game">
     <div class="emoji">❌</div>
     <h3>Tic Tac Toe</h3>
     <p>Play against a friend</p>
-    <button onclick="startTic()">Play Now</button>
+    <button onclick="openGame('tic')">Play Now</button>
    </div>
+
    <div class="game">
     <div class="emoji">⚡</div>
     <h3>Tap Challenge</h3>
     <p>Tap as fast as possible</p>
-    <button onclick="startTap()">Play Now</button>
+    <button onclick="openGame('tap')">Play Now</button>
    </div>
+
    <div class="game">
     <div class="emoji">🔢</div>
     <h3>Guess Number</h3>
     <p>Find the secret number</p>
-    <button onclick="startGuess()">Play Now</button>
+    <button onclick="openGame('guess')">Play Now</button>
    </div>
+
    <div class="game">
     <div class="emoji">🧠</div>
     <h3>Quick Math</h3>
     <p>Solve the math question</p>
-    <button onclick="startMath()">Play Now</button>
+    <button onclick="openGame('math')">Play Now</button>
    </div>
+
   </div>
  </div>
 
  <div class="card">
   <h2>🏆 Leaderboard</h2>
-  <ol id="leaderboard"></ol>
-  <p class="muted">Scores are saved on this device.</p>
+  <div id="leaderboard"></div>
+  <p>Scores are saved on this device.</p>
  </div>
+
 </section>
 
-<section class="card" id="playArea">
- <h2 id="gameTitle">Game</h2>
- <div id="gameContent"></div>
- <button class="secondary" onclick="backHome()">← Back to Home</button>
+<!-- TIC TAC TOE -->
+<section id="tic" class="card hidden">
+ <h2>❌ Tic Tac Toe</h2>
+ <p>Two players take turns. X starts.</p>
+ <div class="rank">
+  <span style="color:#ff7777">Player X</span>
+  <span style="color:#ff7777">Player O</span>
+ </div>
+ <div class="board" id="board"></div>
+ <div class="result" id="ticResult">Player X's turn</div>
+ <button onclick="resetTic()">Restart</button>
+ <button class="secondary" onclick="goHome()">← Back to Home</button>
 </section>
+
+<!-- TAP CHALLENGE -->
+<section id="tap" class="card hidden">
+ <h2>⚡ Tap Challenge</h2>
+ <p>Tap the button as many times as possible in 10 seconds!</p>
+ <div class="big-number" id="tapCount">0</div>
+ <div class="result" id="tapTime">Time: 10 seconds</div>
+ <div class="tap-area">
+  <button id="tapButton" onclick="tapClick()">👆 TAP ME!</button>
+ </div>
+ <button class="secondary" onclick="startTap()">Start / Restart</button>
+ <button class="secondary" onclick="goHome()">← Back to Home</button>
+</section>
+
+<!-- GUESS NUMBER -->
+<section id="guess" class="card hidden">
+ <h2>🔢 Guess Number</h2>
+ <p>Guess a number between 1 and 100.</p>
+ <input type="number" id="guessInput" placeholder="Enter your number" min="1" max="100">
+ <button onclick="checkGuess()">Check Number</button>
+ <div class="result" id="guessResult">Good Luck! 🍀</div>
+ <button class="secondary" onclick="newGuess()">New Game</button>
+ <button class="secondary" onclick="goHome()">← Back to Home</button>
+</section>
+
+<!-- QUICK MATH -->
+<section id="math" class="card hidden">
+ <h2>🧠 Quick Math</h2>
+ <p>Solve the question and earn points!</p>
+ <div class="big-number" id="question">5 + 5 = ?</div>
+ <input type="number" id="mathInput" placeholder="Your answer">
+ <button onclick="checkMath()">Submit Answer</button>
+ <div class="result" id="mathResult">Ready? 🚀</div>
+ <button class="secondary" onclick="newMath()">New Question</button>
+ <button class="secondary" onclick="goHome()">← Back to Home</button>
+</section>
+
 </main>
 
 <footer>ABHI APP © 2026 | Made for Gamers ❤️</footer>
 
 <script>
-const $=id=>document.getElementById(id);
-let player=localStorage.getItem("abhiPlayer")||"";
-let scores=JSON.parse(localStorage.getItem("abhiScores")||"{}");
-let played=Number(localStorage.getItem("abhiPlayed")||0);
-let secret=0,attempts=0,taps=0,timer=null,board=Array(9).fill("");
-let turn="X",ended=fa
+let name = localStorage.getItem("abhiName") || "";
+let score = Number(localStorage.getItem("abhiScore") || 0);
+let played = Number(localStorage.getItem("abhiPlayed") || 0);
+
+function save(){
+ localStorage.setItem("abhiScore",score);
+ localStorage.setItem("abhiPlayed",played);
+}
+
+function login(){
+ let n=document.getElementById("playerName").value.trim();
+ if(!n){alert("Please enter your name!");return;}
+ name=n;
+ localStorage.setItem("abhiName",name);
+ showHome();
+}
+
+function logout(){
+ name="";
+ localStorage.removeItem("abhiName");
+ showPage("login");
+}
+
+function showPage(id){
+ ["login","home","tic","tap","guess","math"].forEach(x=>{
+  document.getElementById(x).classList.add("hidden");
+ });
+ document.getElementById(id).classList.remove("hidden");
+}
+
+function showHome(){
+ document.getElementById("welcomeName").textContent=name;
+ document.getElementById("score").textContent=score;
+ document.getElementById("played").textContent=played;
+ renderLeaderboard();
+ showPage("home");
+}
+
+function openGame(id){
+ showPage(id);
+ if(id==="tic") resetTic();
+ if(id==="tap") resetTap();
+ if(id==="guess") newGuess();
+ if(id==="math") newMath();
+}
+
+function goHome(){
+ if(tapTimer){clearInterval(tapTimer);tapTimer=null;}
+ showHome();
+}
+
+function addScore(points){
+ score+=points;
+ played++;
+ save();
+ document.getElementById("score").textContent=score;
+ document.getElementById("played").textContent=played;
+ renderLeaderboard();
+}
+
+function renderLeaderboard(){
+ let entries=JSON.parse(localStorage.getItem("abhiPlayers")||"{}");
+ entries[name]=score;
+ localStorage.setItem("abhiPlayers",JSON.stringify(entries));
+ let sorted=Object.entries(entries).sort((a,b)=>b[1]-a[1]);
+ document.getElementById("leaderboard").innerHTML=
+ sorted.map((e,i)=>`<div class="rank"><span>${i+1}. ${i===0?"👑 ":""}${escapeHTML(e[0])}</span><span>${e[1]} pts</span></div>`).join("");
+}
+
+function escapeHTML(s){
+ return String(s).replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ })[c]);
+}
+
+// TIC TAC TOE
+let cells=[],turn="X",ticOver=false;
+function resetTic(){
+ cells=Array(9).fill("");
+ turn="X";ticOver=false;
+ document.getElementById("ticResult").textContent="Player X's turn";
+ drawBoard();
+}
+function drawBoard(){
+ document.getElementById("board").innerHTML="";
+ cells.forEach((v,i)=>{
+  let b=document.createElement("div");
+  b.className="cell";
+  b.textContent=v;
+  b.onclick=()=>playCell(i);
+  document.getElementById("board").appendChild(b);
+ });
+}
+function playCell(i){
+ if(cells[i]||ticOver)return;
+ cells[i]=turn;
+ drawBoard();
+ let wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+ if(wins.some(w=>w.every(x=>cells[x]===turn))){
+  document.getElementById("ticResult").textContent="🎉 Player "+turn+" wins!";
+  ticOver=true;
+  if(turn==="X")addScore(10);
+  return;
+ }
+ if(cells.every(Boolean)){
+  document.getElementById("ticResult").textContent="It's a Draw!";
+  ticOver=true;
+  return;
+ }
+ turn=turn==="X"?"O":"X";
+ document.getElementById("ticResult").textContent="Player "+turn+"'s turn";
+}
+
+// TAP CHALLENGE
+let taps=0,tapTimer=null,tapStarted=false;
+function resetTap(){
+ if(tapTimer)clearInterval(tapTimer);
+ tapTimer=null;taps=0;tapStarted=false;
+ document.getElementById("tapCount").textContent=0;
+ document.getElementById("tapTime").textContent="Time: 10 seconds";
+ document.getElementById("tapButton").disabled=true;
+}
+function startTap(){
+ resetTap();
+ tapStarted=true;
+ document.getElementById("tapButton").disabled=false;
+ let left=10;
+ document.getElementById("tapTime").textContent="Time: "+left+" seconds";
+ tapTimer=setInterval(()=>{
+  left--;
+  document.getElementById("tapTime").textContent="Time: "+left+" seconds";
+  if(left<=0){
+   clearInterval(tapTimer);tapTimer=null;
+   tapStarted=false;
+   document.getElementById("tapButton").disabled=true;
+   document.getElementById("tapTime").textContent="Finished! You scored "+taps+" taps!";
+   addScore(taps);
+  }
+ },1000);
+}
+function tapClick(){
+ if(!tapStarted)return;
+ taps++;
+ document.getElementById("tapCount").textContent=taps;
+}
+
+// GUESS NUMBER
+let secret=0,attempts=0;
+function newGuess(){
+ secret=Math.floor(Math.random()*100)+1;
+ attempts=0;
+ document.getElementById("guessInput").value="";
+ document.getElementById("guessResult").textContent="Guess a number! 🍀";
+}
+function checkGuess(){
+ let v=Number(document.getElementById("guessInput").value);
+ if(!v||v<1||v>100){alert("Enter a number between 1 and 100");return;}
+ attempts++;
+ if(v===secret){
+  document.getElementById("guessResult").textContent="🎉 Correct! Attempts: "+attempts;
+  addScore(Math.max(5,30-attempts));
+ }else{
+  document.getElementById("guessResult").textContent=v<secret?"📈 Too low! Try higher.":"📉 Too high! Try lower.";
+ }
+}
+
+// QUICK MATH
+let answer=0,mathDone=false;
+function newMath(){
+ let a=Math.floor(Math.random()*20)+1;
+ let b=Math.floor(Math.random()*20)+1;
+ let op=Math.random()<0.5?"+":"×";
+ answer=op==="+"?a+b:a*b;
+ mathDone=false;
+ document.getElementById("question").textContent=a+" "+op+" "+b+" = ?";
+ document.getElementById("mathInput").value="";
+ document.getElementById("mathResult").textContent="Your turn! 🧠";
+}
+function checkMath(){
+ if(mathDone)return;
+ let v=document.getElementById("mathInput").value;
+ if(v===""){alert("Enter your answer");return;}
+ if(Number(v)===answer){
+  document.getElementById("mathResult").textContent="🎉 Correct! +10 points";
+  mathDone=true;
+  addScore(10);
+ }else{
+  document.getElementById("mathResult").textContent="❌ Wrong answer! Try again.";
+ }
+}
+
+// START APP
+if(name)showHome();
+else showPage("login");
+</script>
+</body>
+</html>
