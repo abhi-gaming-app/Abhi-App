@@ -1,0 +1,274 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#100707">
+<title>Abhi App - Gaming World</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#100707;color:white;font-family:Arial,sans-serif}
+header{padding:22px 18px;background:#1b0909;border-bottom:1px solid #482020}
+.logo{font-size:27px;font-weight:900;color:#ff3333}
+.logo span{color:white}
+header p{color:#aaa;margin:7px 0 0;font-size:13px}
+main{padding:18px;max-width:650px;margin:auto}
+.card{background:#211010;border:1px solid #482323;border-radius:16px;padding:18px;margin-bottom:17px}
+h2{font-size:19px;margin:0 0 14px}
+input{width:100%;padding:14px;border-radius:10px;border:1px solid #663333;background:#130a0a;color:white;font-size:16px;margin:8px 0}
+button{border:0;border-radius:10px;padding:13px 17px;background:#e32222;color:white;font-weight:bold;font-size:15px;cursor:pointer}
+button:active{transform:scale(.97)}
+button.secondary{background:#392020}
+.welcome{font-size:22px;font-weight:bold}
+.muted{color:#aaa;font-size:13px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:#310e0e;padding:17px;border-radius:12px;text-align:center}
+.stat strong{display:block;font-size:25px;color:#ff4545;margin-top:7px}
+.games{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.game{background:#2b1111;border:1px solid #632222;border-radius:14px;padding:17px;text-align:center}
+.game .emoji{font-size:38px}
+.game h3{margin:10px 0 7px;font-size:16px}
+.game p{color:#aaa;font-size:12px;min-height:30px}
+.game button{width:100%;padding:10px;font-size:13px}
+#playArea{display:none}
+#playArea button{margin:4px}
+.big{font-size:32px;font-weight:bold;color:#ff4545}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:15px auto;max-width:280px}
+.cell{height:78px;background:#3a1515;border:1px solid #813030;border-radius:12px;font-size:30px}
+.board{display:flex;justify-content:space-between;gap:8px}
+.board span{color:#ff7777}
+li{padding:10px;border-bottom:1px solid #482020}
+footer{text-align:center;color:#777;padding:20px;font-size:12px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">🎮 ABHI <span>APP</span></div>
+ <p>YOUR GAMING WORLD</p>
+</header>
+
+<main>
+<section class="card" id="login">
+ <h2>👤 Player Login</h2>
+ <p class="muted">Enter your gaming name to continue</p>
+ <input id="playerName" maxlength="18" placeholder="Enter your name">
+ <button onclick="loginPlayer()">Start Gaming →</button>
+</section>
+
+<section id="dashboard" class="hidden">
+ <div class="card">
+  <div class="welcome">Welcome, <span id="displayName">Player</span> 👋</div>
+  <p class="muted">Ready to play and win?</p>
+  <button class="secondary" onclick="logout()">Logout</button>
+ </div>
+
+ <div class="stats">
+  <div class="stat">🏆 Your Score<strong id="score">0</strong></div>
+  <div class="stat">🎯 Games Played<strong id="played">0</strong></div>
+ </div>
+
+ <div class="card" style="margin-top:17px">
+  <h2>🔥 Choose Your Game</h2>
+  <div class="games">
+   <div class="game">
+    <div class="emoji">❌</div>
+    <h3>Tic Tac Toe</h3>
+    <p>Play against a friend</p>
+    <button onclick="startTic()">Play Now</button>
+   </div>
+   <div class="game">
+    <div class="emoji">⚡</div>
+    <h3>Tap Challenge</h3>
+    <p>Tap as fast as possible</p>
+    <button onclick="startTap()">Play Now</button>
+   </div>
+   <div class="game">
+    <div class="emoji">🔢</div>
+    <h3>Guess Number</h3>
+    <p>Find the secret number</p>
+    <button onclick="startGuess()">Play Now</button>
+   </div>
+   <div class="game">
+    <div class="emoji">🧠</div>
+    <h3>Quick Math</h3>
+    <p>Solve the math question</p>
+    <button onclick="startMath()">Play Now</button>
+   </div>
+  </div>
+ </div>
+
+ <div class="card">
+  <h2>🏆 Leaderboard</h2>
+  <ol id="leaderboard"></ol>
+  <p class="muted">Scores are saved on this device.</p>
+ </div>
+</section>
+
+<section class="card" id="playArea">
+ <h2 id="gameTitle">Game</h2>
+ <div id="gameContent"></div>
+ <button class="secondary" onclick="backHome()">← Back to Home</button>
+</section>
+</main>
+
+<footer>ABHI APP © 2026 | Made for Gamers ❤️</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+let player=localStorage.getItem("abhiPlayer")||"";
+let scores=JSON.parse(localStorage.getItem("abhiScores")||"{}");
+let played=Number(localStorage.getItem("abhiPlayed")||0);
+let secret=0,attempts=0,taps=0,timer=null,board=Array(9).fill("");
+let turn="X",ended=false;
+
+function save(){
+ localStorage.setItem("abhiScores",JSON.stringify(scores));
+ localStorage.setItem("abhiPlayed",played);
+ $("score").textContent=scores[player]||0;
+ $("played").textContent=played;
+ renderBoard();
+}
+function loginPlayer(){
+ let n=$("playerName").value.trim();
+ if(!n){alert("Please enter your name!");return}
+ player=n;
+ localStorage.setItem("abhiPlayer",player);
+ showHome();
+}
+function showHome(){
+ $("login").classList.add("hidden");
+ $("dashboard").classList.remove("hidden");
+ $("playArea").style.display="none";
+ $("displayName").textContent=player;
+ $("playerName").value=player;
+ save();
+}
+function logout(){
+ localStorage.removeItem("abhiPlayer");
+ player="";
+ $("dashboard").classList.add("hidden");
+ $("login").classList.remove("hidden");
+}
+function addScore(points){
+ scores[player]=(scores[player]||0)+points;
+ played++;
+ save();
+}
+function renderBoard(){
+ let list=Object.entries(scores).sort((a,b)=>b[1]-a[1]).slice(0,10);
+ $("leaderboard").innerHTML=list.length?list.map(([n,s])=>`<li>👑 ${escapeHTML(n)} <span style="float:right">${s} pts</span></li>`).join(""):"<li>No scores yet. Play a game!</li>";
+}
+function escapeHTML(s){
+ return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function openGame(title,html){
+ clearInterval(timer);
+ $("dashboard").classList.add("hidden");
+ $("playArea").style.display="block";
+ $("gameTitle").textContent=title;
+ $("gameContent").innerHTML=html;
+}
+function backHome(){
+ clearInterval(timer);
+ $("playArea").style.display="none";
+ $("dashboard").classList.remove("hidden");
+ save();
+}
+function startGuess(){
+ secret=Math.floor(Math.random()*20)+1;
+ attempts=0;
+ openGame("🔢 Guess The Number",`
+ <p>Guess a number between 1 and 20.</p>
+ <input type="number" id="guessInput" min="1" max="20" placeholder="Your guess">
+ <button onclick="checkGuess()">Check</button>
+ <p id="guessMessage">You have 5 attempts.</p>`);
+}
+function checkGuess(){
+ let v=Number($("guessInput").value);
+ if(v<1||v>20||!Number.isInteger(v)){ $("guessMessage").textContent="Enter a number from 1 to 20.";return}
+ attempts++;
+ if(v===secret){
+  $("guessMessage").textContent="🎉 Correct! You earned 20 points!";
+  addScore(20);
+  $("gameContent").insertAdjacentHTML("beforeend",'<p>Great job! Go back and play again.</p>');
+ }else if(attempts>=5){
+  $("guessMessage").textContent="Game over! Number was "+secret;
+ }else{
+  $("guessMessage").textContent=(v<secret?"Try a bigger number!":"Try a smaller number!")+" Attempts left: "+(5-attempts);
+ }
+}
+function startTap(){
+ taps=0;
+ openGame("⚡ Tap Challenge",`
+ <p>Tap the button as many times as possible in 10 seconds!</p>
+ <div class="big" id="tapCount">0</div>
+ <button id="tapButton" style="width:100%;height:85px;font-size:23px" onclick="tapNow()">TAP!</button>
+ <p id="tapTime">Time: 10 seconds</p>`);
+ let left=10;
+ timer=setInterval(()=>{
+  left--;
+  $("tapTime").textContent="Time: "+left+" seconds";
+  if(left<=0){
+   clearInterval(timer);
+   $("tapButton").disabled=true;
+   $("tapTime").textContent="Finished! You earned "+taps+" points!";
+   addScore(taps);
+  }
+ },1000);
+}
+function tapNow(){
+ taps++;
+ $("tapCount").textContent=taps;
+}
+function startMath(){
+ let a=Math.floor(Math.random()*20)+1;
+ let b=Math.floor(Math.random()*20)+1;
+ let answer=a+b;
+ openGame("🧠 Quick Math",`
+ <p>Solve this question:</p>
+ <div class="big">${a} + ${b} = ?</div>
+ <input id="mathInput" type="number" placeholder="Your answer">
+ <button onclick="checkMath(${answer})">Submit</button>
+ <p id="mathMessage"></p>`);
+}
+function checkMath(answer){
+ if(Number($("mathInput").value)===answer){
+  $("mathMessage").textContent="Correct! +15 points 🎉";
+  addScore(15);
+ }else $("mathMessage").textContent="Wrong answer. Try another game!";
+}
+function startTic(){
+ board=Array(9).fill("");
+ turn="X";ended=false;
+ openGame("❌ Tic Tac Toe",`
+ <p>Two players take turns. X starts.</p>
+ <div class="board"><span>Player X</span><span>Player O</span></div>
+ <div class="grid">${board.map((_,i)=>`<button class="cell" id="c${i}" onclick="move(${i})"></button>`).join("")}</div>
+ <p id="ticMessage">Player X's turn</p>
+ <button onclick="startTic()">Restart</button>`);
+}
+function move(i){
+ if(ended||board[i])return;
+ board[i]=turn;
+ $("c"+i).textContent=turn;
+ let wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+ if(wins.some(line=>line.every(k=>board[k]===turn))){
+  ended=true;
+  $("ticMessage").textContent="🎉 Player "+turn+" wins!";
+  if(turn==="X")addScore(10);
+  return;
+ }
+ if(board.every(Boolean)){
+  ended=true;
+  $("ticMessage").textContent="It's a draw!";
+  return;
+ }
+ turn=turn==="X"?"O":"X";
+ $("ticMessage").textContent="Player "+turn+"'s turn";
+}
+if(player)showHome();
+</script>
+</body>
+</html>
